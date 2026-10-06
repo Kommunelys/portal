@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Form, PasswordInput, TextInput, email, minLength, required, useNotify } from 'react-admin';
 import { AuthLayout } from 'ra-supabase';
 import { Button, CardContent, Link, Typography } from '@mui/material';
-import { PORTAL, supabase } from '../supabase';
+import { PORTAL, supabase, tilbake } from '../supabase';
 
 const MINST = 10;
 
@@ -20,7 +20,11 @@ export const Registrer = () => {
         const { error } = await supabase.auth.signUp({
             email: verdier.email,
             password: verdier.password,
-            options: { emailRedirectTo: `${PORTAL}/login` },
+            // Lenken i e-posten åpnes i en ny fane, så siden å gå tilbake til følger med.
+            options: {
+                emailRedirectTo: `${PORTAL}/login` +
+                    (tilbake() ? `?tilbake=${encodeURIComponent(tilbake()!)}` : ''),
+            },
         });
         settVenter(false);
         if (error) notify(error.message, { type: 'error' });

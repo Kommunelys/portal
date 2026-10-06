@@ -12,7 +12,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { authProvider } from './authProvider';
 import { dataProvider } from './dataProvider';
 import { i18nProvider } from './i18n';
-import { type Meg } from './supabase';
+import { tilbake, type Meg } from './supabase';
 import { Registrer } from './sider/Registrer';
 import { MinKonto } from './sider/MinKonto';
 import { Drift } from './sider/Drift';
@@ -66,8 +66,11 @@ const Oversikt = () => {
 const Innlogging = () => (
     <LoginPage>
         <LoginForm />
-        <Typography variant="body2" align="center" sx={{ pb: 2 }}>
+        <Typography variant="body2" align="center" sx={{ pb: 1 }}>
             <Link href={Registrer.path}>Ny bruker? Registrer deg</Link>
+        </Typography>
+        <Typography variant="body2" align="center" sx={{ pb: 2 }}>
+            <Link href={tilbake() ?? 'https://kommunelys.no/'}>Tilbake til kommunelys.no</Link>
         </Typography>
     </LoginPage>
 );

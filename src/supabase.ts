@@ -16,6 +16,34 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_NOKKEL, {
 // Hvor lenkene i e-postene skal peke: portalen selv, også lokalt.
 export const PORTAL = window.location.origin;
 
+// Kontomenyen på nettstedet (konto.js) sender folk hit med ?tilbake=<adresse>.
+// Adressen huskes for fanen, så den overlever glemt passord og registrering,
+// og brukes bare om den er på nettstedet.
+const NETTSTEDER = ['https://kommunelys.no/', 'https://www.kommunelys.no/', 'http://localhost:8765/'];
+const TILBAKE = 'kommunelys-tilbake';
+
+export function huskTilbake(): void {
+    const t = new URLSearchParams(window.location.search).get('tilbake');
+    if (t && NETTSTEDER.some((n) => t.startsWith(n))) sessionStorage.setItem(TILBAKE, t);
+}
+
+export function tilbake(): string | null {
+    const t = sessionStorage.getItem(TILBAKE);
+    return t && NETTSTEDER.some((n) => t.startsWith(n)) ? t : null;
+}
+
+// Sender brukeren tilbake til nettstedet, om de kom derfra. Gir true da.
+export function tilbakeTilNettstedet(): boolean {
+    const t = tilbake();
+    if (!t) return false;
+    sessionStorage.removeItem(TILBAKE);
+    window.location.assign(t);
+    return true;
+}
+
+// Om brukeren er prosjektadmin, for kontomenyen på nettstedet (konto-status.html).
+export const ADMIN = 'kommunelys-admin';
+
 export type Meg = {
     er_prosjektadmin: boolean;
     admin_kommuner: number[] | null;

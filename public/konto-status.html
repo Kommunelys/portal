@@ -1,0 +1,23 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Innlogging</title>
+<script>
+/* Svarer kontomenyen på kommunelys.no (konto.js) om nettleseren er logget
+   inn i portalen. Lastes i en skjult ramme. Svaret sendes bare til
+   kommunelys.no, og bare til nettleservinduet, aldri til en server. */
+(function () {
+  var NETTSTEDER = ['https://kommunelys.no', 'https://www.kommunelys.no', 'http://localhost:8765'];
+  if (window.parent === window) return;
+  var svar = { kommunelys: 'konto', epost: null, admin: false };
+  try {
+    var s = JSON.parse(localStorage.getItem('sb-lsxqodiqkjroihzoikje-auth-token') || 'null');
+    if (s && s.refresh_token && s.user && s.user.email) {
+      svar.epost = s.user.email;
+      svar.admin = localStorage.getItem('kommunelys-admin') === '1';
+    }
+  } catch (e) {}
+  // En melding til feil adresse forkastes av nettleseren.
+  NETTSTEDER.forEach(function (o) { window.parent.postMessage(svar, o); });
+})();
+</script>
