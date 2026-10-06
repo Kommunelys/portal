@@ -1,7 +1,9 @@
-import { Admin, CustomRoutes, Layout, Menu, Resource, Title, usePermissions, type LayoutProps } from 'react-admin';
+import {
+    Admin, AppBar, CustomRoutes, Layout, Menu, Resource, Title, TitlePortal, usePermissions, type LayoutProps,
+} from 'react-admin';
 import { Route } from 'react-router-dom';
 import { ForgotPasswordPage, LoginForm, LoginPage, SetPasswordPage } from 'ra-supabase';
-import { Card, CardContent, Link, Typography } from '@mui/material';
+import { Box, Card, CardContent, Link, Typography } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import BadgeIcon from '@mui/icons-material/Badge';
 import CardMembershipIcon from '@mui/icons-material/CardMembership';
@@ -12,6 +14,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { authProvider } from './authProvider';
 import { dataProvider } from './dataProvider';
 import { i18nProvider } from './i18n';
+import { lystTema, morktTema } from './tema';
 import { tilbake, type Meg } from './supabase';
 import { Registrer } from './sider/Registrer';
 import { MinKonto } from './sider/MinKonto';
@@ -37,7 +40,34 @@ const Meny = () => {
     );
 };
 
-const Oppsett = (props: LayoutProps) => <Layout {...props} menu={Meny} />;
+// Toppen som på nettstedet: merket og navnet, som lenker dit, og «Portal».
+const Merke = () => (
+    <Box component="a" href="https://kommunelys.no/" title="Til kommunelys.no"
+        sx={{ display: 'inline-flex', alignItems: 'center', gap: '9px', color: 'inherit', textDecoration: 'none', mr: 2 }}>
+        <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true" focusable="false">
+            <path d="M10.5 9 L31 14.5 V49.5 L10.5 55 Z" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinejoin="round" />
+            <path d="M35.5 12 L54.5 4 V60 L35.5 52 Z" fill="#60A5FA" stroke="#60A5FA" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+        <Typography component="span" sx={{ fontSize: 21, fontWeight: 700, letterSpacing: '-.03em' }}>
+            Kommunelys
+        </Typography>
+        <Typography component="span" sx={{
+            fontSize: 13, fontWeight: 600, border: 1, borderColor: 'divider', borderRadius: 999,
+            px: 1.2, py: 0.2, ml: 0.5,
+        }}>
+            Portal
+        </Typography>
+    </Box>
+);
+
+const Topp = () => (
+    <AppBar color="inherit">
+        <Merke />
+        <TitlePortal variant="body1" sx={{ color: 'text.secondary' }} />
+    </AppBar>
+);
+
+const Oppsett = (props: LayoutProps) => <Layout {...props} menu={Meny} appBar={Topp} />;
 
 const Oversikt = () => {
     const { permissions } = usePermissions<Meg>();
@@ -78,6 +108,8 @@ const Innlogging = () => (
 export const App = () => (
     <Admin
         title="Kommunelys"
+        theme={lystTema}
+        darkTheme={morktTema}
         dataProvider={dataProvider}
         authProvider={authProvider}
         i18nProvider={i18nProvider}

@@ -12,6 +12,7 @@
   "dependencies": {
     "@mui/icons-material": "^7.3.11",
     "@mui/material": "^7.3.11",
+    "@mui/utils": "^7.3.11",
     "@supabase/supabase-js": "^2.117.2",
     "ra-supabase": "^3.5.2",
     "react": "^19.2.8",
