@@ -65,6 +65,13 @@ const Handlinger = () => {
     );
 };
 
+// Ny rolle eller nytt abonnement, med brukeren ferdig utfylt.
+const GiTilgang = ({ ressurs, tekst }: { ressurs: string; tekst: string }) => {
+    const r = useRecordContext();
+    if (!r) return null;
+    return <CreateButton resource={ressurs} label={tekst} state={{ record: { user_id: r.id } }} />;
+};
+
 export const BrukerVis = () => (
     <Show actions={<Handlinger />}>
         <SimpleShowLayout>
@@ -75,19 +82,21 @@ export const BrukerVis = () => (
             <DateField source="sist_innlogget" label="Sist innlogget" showTime emptyText="–" />
             <DateField source="sperret_til" label="Sperret til" emptyText="–" />
             <ReferenceManyField label="Roller" reference="medlemskap" target="user_id">
-                <Datagrid bulkActionButtons={false} empty={<span>Ingen</span>}>
-                    <ReferenceField source="kommune_id" reference="kommune" label="Kommune" />
+                <Datagrid bulkActionButtons={false} rowClick="edit" empty={<span>Ingen</span>}>
+                    <ReferenceField source="kommune_id" reference="kommune" label="Kommune" link={false} />
                     <TextField source="rolle" label="Rolle" />
                 </Datagrid>
             </ReferenceManyField>
+            <GiTilgang ressurs="medlemskap" tekst="Gi rolle" />
             <ReferenceManyField label="Abonnement" reference="abonnement" target="user_id">
-                <Datagrid bulkActionButtons={false} empty={<span>Ingen</span>}>
+                <Datagrid bulkActionButtons={false} rowClick="edit" empty={<span>Ingen</span>}>
                     <ReferenceField source="kommune_id" reference="kommune" label="Kommune" />
                     <TextField source="produkt" label="Produkt" />
                     <DateField source="fra" label="Fra" />
                     <DateField source="til" label="Til" emptyText="–" />
                 </Datagrid>
             </ReferenceManyField>
+            <GiTilgang ressurs="abonnement" tekst="Gi abonnement" />
         </SimpleShowLayout>
     </Show>
 );

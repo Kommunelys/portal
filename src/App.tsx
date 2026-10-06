@@ -20,7 +20,7 @@ import { Registrer } from './sider/Registrer';
 import { MinKonto } from './sider/MinKonto';
 import { Drift } from './sider/Drift';
 import { BrukerInviter, BrukerListe, BrukerVis } from './ressurser/brukere';
-import { AbonnementEndre, AbonnementListe, AbonnementNy, RolleListe, RolleNy } from './ressurser/tilgang';
+import { AbonnementEndre, AbonnementListe, AbonnementNy, RolleEndre, RolleListe, RolleNy } from './ressurser/tilgang';
 import { AvvikListe, AvvikVis } from './ressurser/avvik';
 
 // Menyene styres av portal.meg(). Tilgangen håndheves i databasen.
@@ -126,7 +126,7 @@ export const App = () => (
                             list={BrukerListe} show={BrukerVis} create={BrukerInviter}
                             recordRepresentation="email" />
                         <Resource name="medlemskap" options={{ label: 'Roller' }} icon={BadgeIcon}
-                            list={RolleListe} create={RolleNy} />
+                            list={RolleListe} create={RolleNy} edit={RolleEndre} />
                         <Resource name="abonnement" options={{ label: 'Abonnement' }} icon={CardMembershipIcon}
                             list={AbonnementListe} create={AbonnementNy} edit={AbonnementEndre} />
                         <Resource name="avvik" options={{ label: 'Avvik' }} icon={ReportProblemIcon}

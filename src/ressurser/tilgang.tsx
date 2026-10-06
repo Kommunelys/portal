@@ -1,7 +1,12 @@
 import {
     AutocompleteInput, Create, Datagrid, DateField, DateTimeInput, Edit, List,
     ReferenceField, ReferenceInput, SelectInput, SimpleForm, TextField, TextInput, required,
+    type RedirectionSideEffect,
 } from 'react-admin';
+
+// Etter lagring: tilbake til brukeren rollen eller abonnementet gjelder.
+const tilBrukeren: RedirectionSideEffect = (_resource, _id, data) =>
+    data?.user_id ? `brukere/${data.user_id}/show` : 'list';
 
 const ROLLER = [
     { id: 'admin', name: 'Admin for kommunen' },
@@ -12,22 +17,22 @@ const KILDER = [
     { id: 'betaling', name: 'Betaling' },
 ];
 
-const Bruker = () => (
+const Bruker = ({ disabled }: { disabled?: boolean }) => (
     <ReferenceInput source="user_id" reference="brukere">
         <AutocompleteInput label="Bruker" optionText="email" validate={required()}
-            filterToQuery={(q) => ({ q })} />
+            filterToQuery={(q) => ({ q })} disabled={disabled} />
     </ReferenceInput>
 );
-const Kommune = () => (
+const Kommune = ({ disabled }: { disabled?: boolean }) => (
     <ReferenceInput source="kommune_id" reference="kommune">
-        <SelectInput label="Kommune" optionText="navn" validate={required()} />
+        <SelectInput label="Kommune" optionText="navn" validate={required()} disabled={disabled} />
     </ReferenceInput>
 );
 
 // Roller per kommune (tilgang.medlemskap). Brukes ikke på nettstedet ennå.
 export const RolleListe = () => (
     <List title="Roller" sort={{ field: 'lagt_til', order: 'DESC' }}>
-        <Datagrid rowClick={false}>
+        <Datagrid rowClick="edit">
             <ReferenceField source="user_id" reference="brukere" label="Bruker">
                 <TextField source="email" />
             </ReferenceField>
@@ -40,8 +45,19 @@ export const RolleListe = () => (
     </List>
 );
 
+// Bruker og kommune er nøkkelen; skal de endres, slettes rollen og gis på nytt.
+export const RolleEndre = () => (
+    <Edit title="Endre rolle" mutationMode="pessimistic" redirect={tilBrukeren}>
+        <SimpleForm>
+            <Bruker disabled />
+            <Kommune disabled />
+            <SelectInput source="rolle" label="Rolle" choices={ROLLER} validate={required()} />
+        </SimpleForm>
+    </Edit>
+);
+
 export const RolleNy = () => (
-    <Create title="Gi rolle" redirect="list">
+    <Create title="Gi rolle" redirect={tilBrukeren}>
         <SimpleForm>
             <Bruker />
             <Kommune />
@@ -84,8 +100,8 @@ const AbonnementSkjema = () => (
 );
 
 export const AbonnementNy = () => (
-    <Create title="Gi abonnement" redirect="list"><AbonnementSkjema /></Create>
+    <Create title="Gi abonnement" redirect={tilBrukeren}><AbonnementSkjema /></Create>
 );
 export const AbonnementEndre = () => (
-    <Edit title="Endre abonnement" mutationMode="pessimistic"><AbonnementSkjema /></Edit>
+    <Edit title="Endre abonnement" mutationMode="pessimistic" redirect={tilBrukeren}><AbonnementSkjema /></Edit>
 );
