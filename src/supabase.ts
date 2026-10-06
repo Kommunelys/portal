@@ -32,17 +32,45 @@ export function tilbake(): string | null {
     return t && NETTSTEDER.some((n) => t.startsWith(n)) ? t : null;
 }
 
-// Sender brukeren tilbake til nettstedet, om de kom derfra. Gir true da.
-export function tilbakeTilNettstedet(): boolean {
+export type Konto = { epost: string; admin: boolean };
+
+// Nettstedet som hører til denne portalen: kommunelys.no, eller lokalt :8765.
+export const NETTSTED = window.location.origin.startsWith('http://localhost')
+    ? 'http://localhost:8765/' : 'https://kommunelys.no/';
+
+// Adressen til /konto/ på nettstedet. Den lagrer kontoen (eller fjerner den,
+// når konto er null) for kontomenyen, og sender videre til til. Alt står
+// etter #, så det sendes aldri til serveren.
+export function viaNettstedet(til: string, konto: Konto | null): string {
+    const h = new URLSearchParams();
+    if (konto) {
+        h.set('epost', konto.epost);
+        if (konto.admin) h.set('admin', '1');
+    } else {
+        h.set('ut', '');
+    }
+    h.set('til', til);
+    return `${new URL(NETTSTED).origin}/konto/#${h}`;
+}
+
+// Kontoen til den som er logget inn, eller null.
+export async function minKonto(): Promise<Konto | null> {
+    const { data } = await supabase.auth.getSession();
+    const epost = data.session?.user.email;
+    if (!epost) return null;
+    const { data: meg } = await supabase.rpc('meg');
+    return { epost, admin: (meg as Meg | null)?.er_prosjektadmin === true };
+}
+
+// Sender brukeren tilbake til nettstedet, om de kom derfra, med kontoen til
+// kontomenyen. Gir true da.
+export function tilbakeTilNettstedet(konto: Konto | null): boolean {
     const t = tilbake();
     if (!t) return false;
     sessionStorage.removeItem(TILBAKE);
-    window.location.assign(t);
+    window.location.replace(viaNettstedet(t, konto));
     return true;
 }
-
-// Om brukeren er prosjektadmin, for kontomenyen på nettstedet (konto-status.html).
-export const ADMIN = 'kommunelys-admin';
 
 export type Meg = {
     er_prosjektadmin: boolean;

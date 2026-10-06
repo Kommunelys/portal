@@ -1,5 +1,5 @@
 import { supabaseAuthProvider } from 'ra-supabase';
-import { ADMIN, PORTAL, supabase, tilbakeTilNettstedet, type Meg } from './supabase';
+import { PORTAL, minKonto, supabase, tilbakeTilNettstedet, viaNettstedet, type Meg } from './supabase';
 
 const ingen: Meg = { er_prosjektadmin: false, admin_kommuner: [], vurderer_kommuner: [] };
 
@@ -9,10 +9,7 @@ const grunn = supabaseAuthProvider(supabase, {
     // edge-funksjonen.
     getPermissions: async () => {
         const { data, error } = await supabase.rpc('meg');
-        const meg = error ? ingen : (data as Meg);
-        if (meg.er_prosjektadmin) localStorage.setItem(ADMIN, '1');
-        else localStorage.removeItem(ADMIN);
-        return meg;
+        return error ? ingen : (data as Meg);
     },
 });
 
@@ -21,11 +18,14 @@ export const authProvider = {
     // Kom brukeren fra nettstedet, går de tilbake dit etter innloggingen.
     async login(params: any) {
         await grunn.login(params);
-        tilbakeTilNettstedet();
+        tilbakeTilNettstedet(await minKonto());
     },
+    // Kontomenyen på nettstedet skal også vite at brukeren er logget ut: via
+    // /konto/ der, og tilbake til innloggingen her.
     async logout(params: any) {
-        localStorage.removeItem(ADMIN);
-        return grunn.logout(params);
+        const varInnlogget = (await supabase.auth.getSession()).data.session != null;
+        await grunn.logout(params);
+        if (varInnlogget) window.location.assign(viaNettstedet(`${PORTAL}/login`, null));
     },
     // Lenken i e-posten skal tilbake til denne portalen, ikke til Site URL.
     resetPassword: (params: { email: string }) =>

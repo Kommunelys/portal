@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
-import { ADMIN, huskTilbake, supabase, tilbakeTilNettstedet } from './supabase';
+import { huskTilbake, minKonto, supabase, tilbakeTilNettstedet } from './supabase';
 
 huskTilbake();
 
@@ -10,15 +10,14 @@ huskTilbake();
 // brukeren sendes tilbake dit.
 if (window.location.pathname === '/logg-ut') {
     supabase.auth.signOut({ scope: 'local' }).finally(() => {
-        localStorage.removeItem(ADMIN);
-        if (!tilbakeTilNettstedet()) window.location.replace('/login');
+        if (!tilbakeTilNettstedet(null)) window.location.replace('/login');
     });
 } else {
     // Kom brukeren fra nettstedet for å logge inn, men er allerede logget
-    // inn, går de rett tilbake.
+    // inn, går de rett tilbake, og kontomenyen der får vite det.
     if (window.location.pathname === '/login') {
-        supabase.auth.getSession().then(({ data }) => {
-            if (data.session) tilbakeTilNettstedet();
+        minKonto().then((konto) => {
+            if (konto) tilbakeTilNettstedet(konto);
         });
     }
     start();

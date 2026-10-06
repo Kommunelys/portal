@@ -15,7 +15,7 @@ import { authProvider } from './authProvider';
 import { dataProvider } from './dataProvider';
 import { i18nProvider } from './i18n';
 import { lystTema, morktTema } from './tema';
-import { tilbake, type Meg } from './supabase';
+import { NETTSTED, minKonto, tilbake, viaNettstedet, type Meg } from './supabase';
 import { Registrer } from './sider/Registrer';
 import { MinKonto } from './sider/MinKonto';
 import { Drift } from './sider/Drift';
@@ -42,7 +42,11 @@ const Meny = () => {
 
 // Toppen som på nettstedet: merket og navnet, som lenker dit, og «Portal».
 const Merke = () => (
-    <Box component="a" href="https://kommunelys.no/" title="Til kommunelys.no"
+    <Box component="a" href={NETTSTED} title="Til kommunelys.no"
+        onClick={async (e: React.MouseEvent) => {
+            e.preventDefault();
+            window.location.assign(viaNettstedet(NETTSTED, await minKonto()));
+        }}
         sx={{ display: 'inline-flex', alignItems: 'center', gap: '9px', color: 'inherit', textDecoration: 'none', mr: 2 }}>
         <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true" focusable="false">
             <path d="M10.5 9 L31 14.5 V49.5 L10.5 55 Z" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinejoin="round" />
