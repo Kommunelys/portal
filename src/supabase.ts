@@ -22,8 +22,9 @@ export const PORTAL = window.location.origin;
 const NETTSTEDER = ['https://kommunelys.no/', 'https://www.kommunelys.no/', 'http://localhost:8765/'];
 const TILBAKE = 'kommunelys-tilbake';
 
-export function huskTilbake(): void {
-    const t = new URLSearchParams(window.location.search).get('tilbake');
+export function huskTilbake(
+    t: string | null = new URLSearchParams(window.location.search).get('tilbake'),
+): void {
     if (t && NETTSTEDER.some((n) => t.startsWith(n))) sessionStorage.setItem(TILBAKE, t);
 }
 

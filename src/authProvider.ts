@@ -30,9 +30,10 @@ export const authProvider = {
     // Lenken i e-posten skal tilbake til denne portalen, ikke til Site URL.
     resetPassword: (params: { email: string }) =>
         grunn.resetPassword({ ...params, redirectTo: `${PORTAL}/set-password` }),
-    // Registreringen skal kunne vises uten innlogging, som siden for glemt passord.
+    // Registreringen og bekreftelsen fra e-post skal kunne vises uten
+    // innlogging, som siden for glemt passord.
     async checkAuth(params: any) {
-        if (window.location.pathname === '/registrer') return;
+        if (['/registrer', '/bekreft'].includes(window.location.pathname)) return;
         return grunn.checkAuth(params);
     },
 };

@@ -17,6 +17,7 @@ import { i18nProvider } from './i18n';
 import { lystTema, morktTema } from './tema';
 import { NETTSTED, minKonto, tilbake, viaNettstedet, type Meg } from './supabase';
 import { Registrer } from './sider/Registrer';
+import { Bekreft } from './sider/Bekreft';
 import { MinKonto } from './sider/MinKonto';
 import { Drift } from './sider/Drift';
 import { BrukerInviter, BrukerListe, BrukerVis } from './ressurser/brukere';
@@ -151,6 +152,7 @@ export const App = () => (
                     <Route path={SetPasswordPage.path} element={<SetPasswordPage />} />
                     <Route path={ForgotPasswordPage.path} element={<ForgotPasswordPage />} />
                     <Route path={Registrer.path} element={<Registrer />} />
+                    <Route path={Bekreft.path} element={<Bekreft />} />
                 </CustomRoutes>
             </>
         )}
