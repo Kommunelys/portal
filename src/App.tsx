@@ -2,7 +2,7 @@ import {
     Admin, AppBar, CustomRoutes, Layout, Menu, Resource, Title, TitlePortal, usePermissions, type LayoutProps,
 } from 'react-admin';
 import { Route } from 'react-router-dom';
-import { ForgotPasswordPage, LoginForm, LoginPage, SetPasswordPage } from 'ra-supabase';
+import { LoginPage, SetPasswordPage } from 'ra-supabase';
 import { Box, Card, CardContent, Link, Typography } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import BadgeIcon from '@mui/icons-material/Badge';
@@ -17,6 +17,7 @@ import { i18nProvider } from './i18n';
 import { lystTema, morktTema } from './tema';
 import { NETTSTED, minKonto, tilbake, viaNettstedet, type Meg } from './supabase';
 import { Registrer } from './sider/Registrer';
+import { GlemtPassord, InnloggingSkjema } from './sider/Innlogging';
 import { Bekreft } from './sider/Bekreft';
 import { MinKonto } from './sider/MinKonto';
 import { Drift } from './sider/Drift';
@@ -100,7 +101,7 @@ const Oversikt = () => {
 
 const Innlogging = () => (
     <LoginPage>
-        <LoginForm />
+        <InnloggingSkjema />
         <Typography variant="body2" align="center" sx={{ pb: 1 }}>
             <Link href={Registrer.path}>Ny bruker? Registrer deg</Link>
         </Typography>
@@ -150,7 +151,7 @@ export const App = () => (
                 </CustomRoutes>
                 <CustomRoutes noLayout>
                     <Route path={SetPasswordPage.path} element={<SetPasswordPage />} />
-                    <Route path={ForgotPasswordPage.path} element={<ForgotPasswordPage />} />
+                    <Route path={GlemtPassord.path} element={<GlemtPassord />} />
                     <Route path={Registrer.path} element={<Registrer />} />
                     <Route path={Bekreft.path} element={<Bekreft />} />
                 </CustomRoutes>
