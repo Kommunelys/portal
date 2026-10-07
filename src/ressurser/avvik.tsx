@@ -8,7 +8,6 @@ import { Button, Card, CardContent, Chip, Typography } from '@mui/material';
 const AVGJORELSER = [
     { id: 'publiser', name: 'Publiser' },
     { id: 'ikke_publiser', name: 'Ikke publiser' },
-    { id: 'venter_paa_kommunen', name: 'Venter på kommunen' },
 ];
 const navn = (a?: string) => AVGJORELSER.find((x) => x.id === a)?.name;
 
