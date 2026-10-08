@@ -33,7 +33,11 @@ export function tilbake(): string | null {
     return t && NETTSTEDER.some((n) => t.startsWith(n)) ? t : null;
 }
 
-export type Konto = { epost: string; admin: boolean };
+// nokkel og utloper: tilgangsnøkkelen til innloggingen, med utløpstiden i
+// sekunder. Nettstedet bruker den bare til å hente dataene for kommunene med
+// begrenset innsyn (innsyn.js i website-repoet, ADR-024). Den gjelder i en
+// time; nettstedet henter en ny her når den er gått ut.
+export type Konto = { epost: string; admin: boolean; nokkel?: string; utloper?: number };
 
 // Nettstedet som hører til denne portalen: kommunelys.no, eller lokalt :8765.
 export const NETTSTED = window.location.origin.startsWith('http://localhost')
@@ -47,6 +51,10 @@ export function viaNettstedet(til: string, konto: Konto | null): string {
     if (konto) {
         h.set('epost', konto.epost);
         if (konto.admin) h.set('admin', '1');
+        if (konto.nokkel && konto.utloper) {
+            h.set('nokkel', konto.nokkel);
+            h.set('utloper', String(konto.utloper));
+        }
     } else {
         h.set('ut', '');
     }
@@ -56,12 +64,16 @@ export function viaNettstedet(til: string, konto: Konto | null): string {
 
 // Kontoen til den som er logget inn, eller null.
 export async function minKonto(): Promise<Konto | null> {
-    const { data } = await supabase.auth.getSession();
-    const epost = data.session?.user.email;
-    if (!epost) return null;
+    let { data: { session } } = await supabase.auth.getSession();
+    // Nettstedet skal få en nøkkel som gjelder en stund, ikke en som snart går ut.
+    if (session?.expires_at && session.expires_at * 1000 - Date.now() < 10 * 60 * 1000) {
+        session = (await supabase.auth.refreshSession()).data.session ?? session;
+    }
+    const epost = session?.user.email;
+    if (!session || !epost) return null;
     const { data: meg } = await supabase.rpc('meg');
     // Kontomenyen på nettstedet viser «Portalen» for dem som har noe å gjøre der.
-    return { epost, admin: erVurderer(meg as Meg | null) };
+    return { epost, admin: erVurderer(meg as Meg | null), nokkel: session.access_token, utloper: session.expires_at };
 }
 
 // Sender brukeren tilbake til nettstedet, om de kom derfra, med kontoen til
