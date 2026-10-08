@@ -10,7 +10,7 @@ const tilBrukeren: RedirectionSideEffect = (_resource, _id, data) =>
 
 const ROLLER = [
     { id: 'admin', name: 'Admin for kommunen' },
-    { id: 'vurderer', name: 'Vurderer avvik' },
+    { id: 'vurderer', name: 'Vurderer for kommunen' },
 ];
 const KILDER = [
     { id: 'manuell', name: 'Gitt for hånd' },

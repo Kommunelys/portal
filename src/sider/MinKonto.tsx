@@ -1,10 +1,39 @@
 import { useState } from 'react';
 import {
     Form, PasswordInput, TextInput, Title, email, minLength, required,
-    useGetIdentity, useLogout, useNotify, usePermissions,
+    useGetIdentity, useGetList, useLogout, useNotify, usePermissions,
 } from 'react-admin';
-import { Button, Card, CardContent, Stack, Typography } from '@mui/material';
-import { PORTAL, brukeradmin, supabase, type Meg } from '../supabase';
+import { Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
+import { PORTAL, brukeradmin, erVurderer, supabase, type Meg } from '../supabase';
+import { GJELDER, MELDING_NAVN as NAVN } from '../ressurser/kodeverk';
+import { SakLenke } from '../ressurser/felles';
+
+// Meldingene brukeren har sendt fra «Meld fra om feil», med svaret (ADR-023).
+const MineMeldinger = () => {
+    const { data } = useGetList('feilmelding', {
+        filter: { egen: true }, sort: { field: 'meldt', order: 'DESC' }, pagination: { page: 1, perPage: 50 },
+    });
+    if (!data?.length) return null;
+    return (
+        <Card>
+            <CardContent>
+                <Typography variant="subtitle1" gutterBottom>Mine meldinger om feil</Typography>
+                <Stack spacing={1.5} divider={<Divider />}>
+                    {data.map((m) => (
+                        <div key={m.id}>
+                            <SakLenke kommune={m.kommune} sak={m.sak_id} tittel={m.sak_tittel} />
+                            <Typography variant="body2" color="text.secondary">
+                                {new Date(m.meldt).toLocaleDateString('nb-NO')} · {GJELDER[m.gjelder]} ·{' '}
+                                {m.avgjorelse === 'ikke_vurdert' ? 'Venter på vurdering' : NAVN[m.avgjorelse]}
+                            </Typography>
+                            {m.svar && <Typography variant="body2" sx={{ mt: 0.5 }}>Svar: {m.svar}</Typography>}
+                        </div>
+                    ))}
+                </Stack>
+            </CardContent>
+        </Card>
+    );
+};
 
 export const MinKonto = () => {
     const notify = useNotify();
@@ -47,10 +76,12 @@ export const MinKonto = () => {
                 <CardContent>
                     <Typography variant="h6">{identity?.fullName}</Typography>
                     <Typography variant="body2" color="text.secondary">
-                        {permissions?.er_prosjektadmin ? 'Prosjektadmin' : 'Bruker'}
+                        {permissions?.er_prosjektadmin ? 'Prosjektadmin'
+                            : erVurderer(permissions) ? 'Vurderer' : 'Bruker'}
                     </Typography>
                 </CardContent>
             </Card>
+            <MineMeldinger />
             <Card>
                 <CardContent>
                     <Typography variant="subtitle1" gutterBottom>Bytt passord</Typography>
