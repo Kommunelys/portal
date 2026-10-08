@@ -118,7 +118,8 @@ const Oversikt = () => {
                 {permissions?.er_prosjektadmin ? (
                     <Typography>
                         Her administrerer du brukere, roller og abonnement, vurderer det som venter og
-                        ser driften. Nettstedet er fortsatt åpent for alle.
+                        ser driften. Kommunene med begrenset innsyn ser bare de som har en rolle for
+                        kommunen (også leser) og prosjektadmin.
                     </Typography>
                 ) : erVurderer(permissions) ? (
                     <Typography>
@@ -128,9 +129,10 @@ const Oversikt = () => {
                     </Typography>
                 ) : (
                     <Typography>
-                        Du er logget inn. Alt på <Link href="https://kommunelys.no/">kommunelys.no</Link> er
-                        åpent for alle, så kontoen gir ingen ekstra tilgang ennå. Under «Min konto» kan
-                        du bytte passord og e-post eller slette kontoen.
+                        Du er logget inn. Det meste på <Link href="https://kommunelys.no/">kommunelys.no</Link> er
+                        åpent for alle. Noen kommuner har begrenset innsyn mens vi prøver dem ut; dem ser du
+                        om du har fått tilgang. Under «Min konto» kan du bytte passord og e-post eller slette
+                        kontoen.
                     </Typography>
                 )}
                 {erVurderer(permissions) && <TilVurdering />}

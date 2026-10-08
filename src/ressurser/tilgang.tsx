@@ -11,6 +11,8 @@ const tilBrukeren: RedirectionSideEffect = (_resource, _id, data) =>
 const ROLLER = [
     { id: 'admin', name: 'Admin for kommunen' },
     { id: 'vurderer', name: 'Vurderer for kommunen' },
+    // Ser innholdet i en kommune med begrenset innsyn, uten å vurdere (ADR-024).
+    { id: 'leser', name: 'Leser (innsyn i kommunen)' },
 ];
 const KILDER = [
     { id: 'manuell', name: 'Gitt for hånd' },
@@ -29,7 +31,8 @@ const Kommune = ({ disabled }: { disabled?: boolean }) => (
     </ReferenceInput>
 );
 
-// Roller per kommune (tilgang.medlemskap). Brukes ikke på nettstedet ennå.
+// Roller per kommune (tilgang.medlemskap). Alle rollene gir innsyn i en kommune
+// med begrenset innsyn på nettstedet (ADR-024); admin og vurderer vurderer i tillegg.
 export const RolleListe = () => (
     <List title="Roller" sort={{ field: 'lagt_til', order: 'DESC' }}>
         <Datagrid rowClick="edit">
