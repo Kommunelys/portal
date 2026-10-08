@@ -3,26 +3,24 @@ import {
     SelectInput, Show, SimpleShowLayout, TextField, TextInput, UrlField, required,
     useCreate, useGetIdentity, useNotify, useRecordContext, useRefresh,
 } from 'react-admin';
-import { Button, Card, CardContent, Chip, Typography } from '@mui/material';
+import { Button, Card, CardContent, Typography } from '@mui/material';
+import { Begrunnelse, KommuneFelt, KommuneFilter, Merknad, Status } from './felles';
+import { useVurdertAv } from './kodeverk';
 
 const AVGJORELSER = [
     { id: 'publiser', name: 'Publiser' },
     { id: 'ikke_publiser', name: 'Ikke publiser' },
 ];
-const navn = (a?: string) => AVGJORELSER.find((x) => x.id === a)?.name;
+const NAVN = Object.fromEntries(AVGJORELSER.map((a) => [a.id, a.name]));
 
-const Avgjorelse = () => {
-    const r = useRecordContext();
-    if (!r?.avgjorelse) return <Chip size="small" color="warning" label="Ikke vurdert" />;
-    return <Chip size="small" color={r.avgjorelse === 'publiser' ? 'success' : 'default'}
-        label={navn(r.avgjorelse)} />;
-};
+const Avgjorelse = () => <Status verdi={useRecordContext()?.avgjorelse} navn={NAVN} />;
 
 export const AvvikListe = () => (
-    <List title="Avvik" sort={{ field: 'dato', order: 'DESC' }} filterDefaultValues={{ aktiv: true }}
-        filters={[<BooleanInput source="aktiv" label="Bare aktive" alwaysOn key="aktiv" />]}>
+    <List title="Avvik i stemmene" sort={{ field: 'dato', order: 'DESC' }} filterDefaultValues={{ aktiv: true }}
+        filters={[<BooleanInput source="aktiv" label="Bare aktive" alwaysOn key="aktiv" />, KommuneFilter]}>
         <Datagrid rowClick="show" bulkActionButtons={false}>
             <DateField source="dato" label="Møte" />
+            <KommuneFelt label="Kommune" />
             <TextField source="utvalg" label="Utvalg" />
             <TextField source="beskrivelse" label="Avvik" />
             <FunctionField label="Vurdering" render={() => <Avgjorelse />} />
@@ -37,6 +35,7 @@ const NyVurdering = () => {
     const notify = useNotify();
     const refresh = useRefresh();
     const { identity } = useGetIdentity();
+    const vurdertAv = useVurdertAv();
     const [create, { isPending }] = useCreate();
     if (!r) return null;
 
@@ -59,13 +58,11 @@ const NyVurdering = () => {
                     Sjekk protokollen først. Vurderingen endrer aldri navn eller tall, bare om
                     voteringen publiseres. Den kan ikke endres etterpå, bare erstattes av en ny.
                 </Typography>
-                <Form onSubmit={lagre} defaultValues={{ vurdert_av: 'Prosjekteier' }}>
+                <Form onSubmit={lagre} defaultValues={{ vurdert_av: vurdertAv }}>
                     <SelectInput source="avgjorelse" label="Avgjørelse" choices={AVGJORELSER}
                         validate={required()} />
-                    <TextInput source="begrunnelse" label="Begrunnelse (vises ikke på nettstedet)"
-                        multiline fullWidth validate={required()} />
-                    <TextInput source="merknad" label="Merknad (vises ved voteringen på nettstedet)"
-                        multiline fullWidth />
+                    <Begrunnelse />
+                    <Merknad hva="vises ved voteringen" />
                     <TextInput source="vurdert_av" label="Vurdert av" validate={required()}
                         helperText={identity?.fullName ? `Registreres på ${identity.fullName}` : undefined} />
                     <Button type="submit" variant="contained" disabled={isPending}>Lagre vurdering</Button>
@@ -84,7 +81,7 @@ const AlleVurderinger = (_: { label?: string }) => {
             sort={{ field: 'registrert', order: 'DESC' }}>
             <Datagrid bulkActionButtons={false} rowClick={false} empty={<span>Ingen ennå</span>}>
                 <DateField source="dato" label="Dato" />
-                <FunctionField label="Avgjørelse" render={(v: any) => navn(v.avgjorelse)} />
+                <FunctionField label="Avgjørelse" render={(v: any) => NAVN[v.avgjorelse]} />
                 <TextField source="begrunnelse" label="Begrunnelse" />
                 <TextField source="merknad" label="Merknad" emptyText="–" />
                 <TextField source="vurdert_av" label="Vurdert av" />
@@ -94,9 +91,10 @@ const AlleVurderinger = (_: { label?: string }) => {
 };
 
 export const AvvikVis = () => (
-    <Show title="Avvik">
+    <Show title="Avvik i stemmene">
         <SimpleShowLayout>
             <TextField source="beskrivelse" label="Avvik" />
+            <KommuneFelt label="Kommune" />
             <TextField source="saker" label="Saker" emptyText="–" />
             <TextField source="utvalg" label="Utvalg" />
             <DateField source="dato" label="Møte" />

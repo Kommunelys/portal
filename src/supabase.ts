@@ -60,7 +60,8 @@ export async function minKonto(): Promise<Konto | null> {
     const epost = data.session?.user.email;
     if (!epost) return null;
     const { data: meg } = await supabase.rpc('meg');
-    return { epost, admin: (meg as Meg | null)?.er_prosjektadmin === true };
+    // Kontomenyen på nettstedet viser «Portalen» for dem som har noe å gjøre der.
+    return { epost, admin: erVurderer(meg as Meg | null) };
 }
 
 // Sender brukeren tilbake til nettstedet, om de kom derfra, med kontoen til
@@ -78,6 +79,10 @@ export type Meg = {
     admin_kommuner: number[] | null;
     vurderer_kommuner: number[] | null;
 };
+
+// Vurderer for minst én kommune (rollen vurderer eller admin), eller prosjektadmin.
+export const erVurderer = (meg?: Meg | null): boolean =>
+    meg?.er_prosjektadmin === true || (meg?.vurderer_kommuner?.length ?? 0) > 0;
 
 // Kaller edge-funksjonen for det portalen ikke kan gjøre med den
 // publiserbare nøkkelen (supabase/functions/brukeradmin i website-repoet).
