@@ -13,6 +13,7 @@ import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import FeedbackIcon from '@mui/icons-material/Feedback';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 
 import { authProvider } from './authProvider';
 import { dataProvider } from './dataProvider';
@@ -29,6 +30,7 @@ import { BrukerInviter, BrukerListe, BrukerVis } from './ressurser/brukere';
 import { AbonnementEndre, AbonnementListe, AbonnementNy, RolleEndre, RolleListe, RolleNy } from './ressurser/tilgang';
 import { AvvikListe, AvvikVis } from './ressurser/avvik';
 import { SammendragListe, SammendragVis } from './ressurser/sammendrag';
+import { AlleSammendragListe, Rediger, SammendragRediger } from './ressurser/redigering';
 import { MeldingListe, MeldingVis } from './ressurser/feilmeldinger';
 
 // Menyene styres av portal.meg(). Tilgangen håndheves i databasen.
@@ -42,6 +44,7 @@ const Meny = () => {
             {vurderer && <Menu.ResourceItem name="feilmelding" />}
             {vurderer && <Menu.ResourceItem name="sammendrag_holdt" />}
             {vurderer && <Menu.ResourceItem name="avvik" />}
+            {admin && <Menu.ResourceItem name="sammendrag" />}
             {admin && <Menu.ResourceItem name="brukere" />}
             {admin && <Menu.ResourceItem name="medlemskap" />}
             {admin && <Menu.ResourceItem name="abonnement" />}
@@ -94,19 +97,25 @@ const Venter = ({ ressurs, filter, tekst }: { ressurs: string; filter: object; t
     );
 };
 
-const TilVurdering = () => (
-    <>
-        <Typography sx={{ mt: 2 }}>Venter på vurdering:</Typography>
-        <List dense>
-            <Venter ressurs="feilmelding" filter={{ avgjorelse: 'ikke_vurdert' }} tekst="Meldinger om feil" />
-            <Venter ressurs="sammendrag_holdt" filter={{ avgjorelse: 'ikke_vurdert' }} tekst="Sammendrag" />
-            <Venter ressurs="avvik" filter={{ aktiv: true, 'avgjorelse@is': null }} tekst="Avvik i stemmene" />
-        </List>
-        <Typography variant="body2" color="text.secondary">
-            Vurderingene slår inn på nettstedet ved neste kjøring, hverdager tidlig om morgenen.
-        </Typography>
-    </>
-);
+const TilVurdering = () => {
+    const { permissions } = usePermissions<Meg>();
+    return (
+        <>
+            <Typography sx={{ mt: 2 }}>Venter på vurdering:</Typography>
+            <List dense>
+                <Venter ressurs="feilmelding" filter={{ avgjorelse: 'ikke_vurdert' }} tekst="Meldinger om feil" />
+                <Venter ressurs="sammendrag_holdt" filter={{ avgjorelse: 'ikke_vurdert' }} tekst="Sammendrag" />
+                <Venter ressurs="avvik" filter={{ aktiv: true, 'avgjorelse@is': null }} tekst="Avvik i stemmene" />
+                {permissions?.er_prosjektadmin && (
+                    <Venter ressurs="sammendrag" filter={{ status: 'ny_analyse' }} tekst="Ny analyse etter redigering" />
+                )}
+            </List>
+            <Typography variant="body2" color="text.secondary">
+                Vurderingene slår inn på nettstedet ved neste kjøring, hverdager tidlig om morgenen.
+            </Typography>
+        </>
+    );
+};
 
 const Oversikt = () => {
     const { permissions } = usePermissions<Meg>();
@@ -178,8 +187,13 @@ export const App = () => (
                         <Resource name="abonnement" options={{ label: 'Abonnement' }} icon={CardMembershipIcon}
                             list={AbonnementListe} create={AbonnementNy} edit={AbonnementEndre} />
                         <Resource name="drift_side" />
+                        <Resource name="sammendrag" options={{ label: 'Alle sammendrag' }} icon={EditNoteIcon}
+                            list={AlleSammendragListe} show={SammendragRediger} recordRepresentation="sak_tittel" />
+                        <Resource name="sammendrag_redigering" />
+                        <Resource name="tagg" recordRepresentation="tagg" />
                         <CustomRoutes>
                             <Route path={Drift.path} element={<Drift />} />
+                            <Route path={Rediger.path} element={<Rediger />} />
                         </CustomRoutes>
                     </>
                 )}

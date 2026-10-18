@@ -37,7 +37,9 @@ export function tilbake(): string | null {
 // sekunder. Nettstedet bruker den bare til å hente dataene for kommunene med
 // begrenset innsyn (innsyn.js i website-repoet, ADR-024). Den gjelder i en
 // time; nettstedet henter en ny her når den er gått ut.
-export type Konto = { epost: string; admin: boolean; nokkel?: string; utloper?: number };
+// pa: prosjektadmin. Nettstedet viser da lenkene til redigering (ADR-025);
+// databasen avgjør fortsatt hvem som får redigere.
+export type Konto = { epost: string; admin: boolean; pa?: boolean; nokkel?: string; utloper?: number };
 
 // Nettstedet som hører til denne portalen: kommunelys.no, eller lokalt :8765.
 export const NETTSTED = window.location.origin.startsWith('http://localhost')
@@ -51,6 +53,7 @@ export function viaNettstedet(til: string, konto: Konto | null): string {
     if (konto) {
         h.set('epost', konto.epost);
         if (konto.admin) h.set('admin', '1');
+        if (konto.pa) h.set('pa', '1');
         if (konto.nokkel && konto.utloper) {
             h.set('nokkel', konto.nokkel);
             h.set('utloper', String(konto.utloper));
@@ -73,7 +76,10 @@ export async function minKonto(): Promise<Konto | null> {
     if (!session || !epost) return null;
     const { data: meg } = await supabase.rpc('meg');
     // Kontomenyen på nettstedet viser «Portalen» for dem som har noe å gjøre der.
-    return { epost, admin: erVurderer(meg as Meg | null), nokkel: session.access_token, utloper: session.expires_at };
+    return {
+        epost, admin: erVurderer(meg as Meg | null), pa: (meg as Meg | null)?.er_prosjektadmin === true,
+        nokkel: session.access_token, utloper: session.expires_at,
+    };
 }
 
 // Sender brukeren tilbake til nettstedet, om de kom derfra, med kontoen til

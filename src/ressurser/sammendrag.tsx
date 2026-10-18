@@ -1,16 +1,18 @@
 import {
     Datagrid, DateField, Form, FunctionField, List, ReferenceManyField, SelectInput, Show,
     SimpleShowLayout, TextField, TextInput, required, useCreate, useGetIdentity, useNotify,
-    useRecordContext, useRefresh,
+    usePermissions, useRecordContext, useRefresh,
 } from 'react-admin';
 import { Alert, Button, Card, CardContent, Chip, Link, Stack, Typography } from '@mui/material';
 import { Begrunnelse, KommuneFelt, KommuneFilter, Merknad, SakLenke, Status } from './felles';
 import { useVurdertAv } from './kodeverk';
+import type { Meg } from '../supabase';
 
 // Sammendrag som ikke besto kontrollen mot kilden (portal.sammendrag_holdt).
 // En vurderer kan slippe gjennom et sammendrag der kontrollen bare savner et
 // tall eller en dato i kilden. Navn, manglende kilde og usikre svar kan ikke
-// overstyres; der må sammendraget rettes ved kilden (ADR-023).
+// overstyres; der må sammendraget rettes ved kilden (ADR-023). Prosjektadmin
+// kan publisere uansett grunn, og redigere teksten (ADR-025).
 
 const AVGJORELSER = [
     { id: 'publiser', name: 'Publiser' },
@@ -54,8 +56,11 @@ const NyVurdering = () => {
     const refresh = useRefresh();
     const { identity } = useGetIdentity();
     const vurdertAv = useVurdertAv();
+    const { permissions } = usePermissions<Meg>();
     const [create, { isPending }] = useCreate();
     if (!r) return null;
+    const prosjektadmin = permissions?.er_prosjektadmin === true;
+    const kanPublisere = r.kan_godkjennes || prosjektadmin;
 
     const lagre = (v: Record<string, any>) =>
         create('sammendrag_vurdering', {
@@ -77,6 +82,12 @@ const NyVurdering = () => {
                         Sjekk at tallene og datoene står i dokumentene. Vurderingen endrer ikke
                         sammendraget, bare om det vises. Endres grunnene senere, holdes det tilbake igjen.
                     </Typography>
+                ) : prosjektadmin ? (
+                    <Alert severity="warning" sx={{ mb: 1 }}>
+                        Kontrollen fant noe en vurderer ikke kan overstyre. Som prosjektadmin kan du
+                        publisere likevel, for eksempel når «navnet» er en klubb eller en bedrift. Vil du
+                        rette teksten, <Link href={`/sammendrag/${r.id}/show`}>rediger den</Link>.
+                    </Alert>
                 ) : (
                     <Alert severity="info" sx={{ mb: 1 }}>
                         Dette kan ikke godkjennes her: et navn fra sakstittelen må vurderes i
@@ -86,7 +97,7 @@ const NyVurdering = () => {
                 )}
                 <Form onSubmit={lagre} defaultValues={{ vurdert_av: vurdertAv }}>
                     <SelectInput source="avgjorelse" label="Avgjørelse" validate={required()}
-                        choices={r.kan_godkjennes ? AVGJORELSER : AVGJORELSER.filter((a) => a.id !== 'publiser')} />
+                        choices={kanPublisere ? AVGJORELSER : AVGJORELSER.filter((a) => a.id !== 'publiser')} />
                     <Begrunnelse />
                     <Merknad hva="vises under sammendraget" />
                     <TextInput source="vurdert_av" label="Vurdert av" validate={required()}
