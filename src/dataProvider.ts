@@ -14,6 +14,7 @@ const portal = supabaseDataProvider({
         ['prosjektadmin', ['user_id']],
         ['medlemskap', ['user_id', 'kommune_id']],
         ['avvik', ['kommune_id', 'avvik']],
+        ['tagg', ['tagg']],
     ]),
 });
 
