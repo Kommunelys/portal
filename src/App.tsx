@@ -14,6 +14,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import EditNoteIcon from '@mui/icons-material/EditNote';
+import ForumIcon from '@mui/icons-material/Forum';
 
 import { authProvider } from './authProvider';
 import { dataProvider } from './dataProvider';
@@ -30,6 +31,7 @@ import { BrukerInviter, BrukerListe, BrukerVis } from './ressurser/brukere';
 import { AbonnementEndre, AbonnementListe, AbonnementNy, RolleEndre, RolleListe, RolleNy } from './ressurser/tilgang';
 import { AvvikListe, AvvikVis } from './ressurser/avvik';
 import { SammendragListe, SammendragVis } from './ressurser/sammendrag';
+import { DebattListe, DebattVis } from './ressurser/debatt';
 import { AlleSammendragListe, Rediger, SammendragRediger } from './ressurser/redigering';
 import { MeldingListe, MeldingVis } from './ressurser/feilmeldinger';
 
@@ -43,6 +45,7 @@ const Meny = () => {
             <Menu.DashboardItem primaryText="Oversikt" />
             {vurderer && <Menu.ResourceItem name="feilmelding" />}
             {vurderer && <Menu.ResourceItem name="sammendrag_holdt" />}
+            {vurderer && <Menu.ResourceItem name="debatt_holdt" />}
             {vurderer && <Menu.ResourceItem name="avvik" />}
             {admin && <Menu.ResourceItem name="sammendrag" />}
             {admin && <Menu.ResourceItem name="brukere" />}
@@ -105,6 +108,7 @@ const TilVurdering = () => {
             <List dense>
                 <Venter ressurs="feilmelding" filter={{ avgjorelse: 'ikke_vurdert' }} tekst="Meldinger om feil" />
                 <Venter ressurs="sammendrag_holdt" filter={{ avgjorelse: 'ikke_vurdert' }} tekst="Sammendrag" />
+                <Venter ressurs="debatt_holdt" filter={{ avgjorelse: 'ikke_vurdert' }} tekst="Debatter" />
                 <Venter ressurs="avvik" filter={{ aktiv: true, 'avgjorelse@is': null }} tekst="Avvik i stemmene" />
                 {permissions?.er_prosjektadmin && (
                     <Venter ressurs="sammendrag" filter={{ status: 'ny_analyse' }} tekst="Ny analyse etter redigering" />
@@ -132,8 +136,8 @@ const Oversikt = () => {
                     </Typography>
                 ) : erVurderer(permissions) ? (
                     <Typography>
-                        Du vurderer saker for kommunen: meldinger om feil, sammendrag som er holdt
-                        tilbake, og avvik i stemmene. Innholdet endres aldri for hånd; du avgjør om noe
+                        Du vurderer saker for kommunen: meldinger om feil, sammendrag og debatter som
+                        er holdt tilbake, og avvik i stemmene. Innholdet endres aldri for hånd; du avgjør om noe
                         vises, og kan skrive en kort merknad.
                     </Typography>
                 ) : (
@@ -201,10 +205,13 @@ export const App = () => (
                     <>
                         <Resource name="sammendrag_holdt" options={{ label: 'Sammendrag' }} icon={SummarizeIcon}
                             list={SammendragListe} show={SammendragVis} recordRepresentation="sak_tittel" />
+                        <Resource name="debatt_holdt" options={{ label: 'Debatter' }} icon={ForumIcon}
+                            list={DebattListe} show={DebattVis} recordRepresentation="sak_tittel" />
                         <Resource name="avvik" options={{ label: 'Avvik i stemmene' }} icon={ReportProblemIcon}
                             list={AvvikListe} show={AvvikVis} recordRepresentation="beskrivelse" />
                         <Resource name="vurdering" />
                         <Resource name="sammendrag_vurdering" />
+                        <Resource name="debatt_vurdering" />
                         <Resource name="feilmelding_vurdering" />
                     </>
                 )}
