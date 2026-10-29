@@ -20,10 +20,11 @@ import { authProvider } from './authProvider';
 import { dataProvider } from './dataProvider';
 import { i18nProvider } from './i18n';
 import { lystTema, morktTema } from './tema';
-import { NETTSTED, erVurderer, minKonto, tilbake, viaNettstedet, type Meg } from './supabase';
+import { NETTSTED, erVurderer, folgSak, minKonto, tilbake, viaNettstedet, type Meg } from './supabase';
 import { Registrer } from './sider/Registrer';
 import { GlemtPassord, InnloggingSkjema } from './sider/Innlogging';
 import { Bekreft } from './sider/Bekreft';
+import { SluttAFolge } from './sider/SluttAFolge';
 import { MinKonto } from './sider/MinKonto';
 import { Drift } from './sider/Drift';
 import { Meld } from './sider/Meld';
@@ -154,17 +155,31 @@ const Oversikt = () => {
     );
 };
 
-const Innlogging = () => (
-    <LoginPage>
-        <InnloggingSkjema />
-        <Typography variant="body2" align="center" sx={{ pb: 1 }}>
-            <Link href={Registrer.path}>Ny bruker? Registrer deg</Link>
-        </Typography>
-        <Typography variant="body2" align="center" sx={{ pb: 2 }}>
-            <Link href={tilbake() ?? 'https://kommunelys.no/'}>Tilbake til kommunelys.no</Link>
-        </Typography>
-    </LoginPage>
-);
+// Fra «Følg saken» på nettstedet sier siden hvorfor, og registreringen får
+// de samme parameterne (ADR-027).
+const Innlogging = () => {
+    const sak = folgSak();
+    return (
+        <LoginPage>
+            {sak !== null && (
+                <CardContent sx={{ pb: 0 }}>
+                    <Typography>
+                        Logg inn for å følge {sak ? <>saken «{sak}»</> : 'saken'}. Du får e-post når den kommer videre.
+                    </Typography>
+                </CardContent>
+            )}
+            <InnloggingSkjema knapp={sak === null ? undefined : 'Logg inn og følg saken'} />
+            <Typography variant="body2" align="center" sx={{ pb: 1 }}>
+                <Link href={sak === null ? Registrer.path : `${Registrer.path}${window.location.search}`}>
+                    {sak === null ? 'Ny bruker? Registrer deg' : 'Ny bruker? Registrer deg gratis'}
+                </Link>
+            </Typography>
+            <Typography variant="body2" align="center" sx={{ pb: 2 }}>
+                <Link href={tilbake() ?? 'https://kommunelys.no/'}>Tilbake til kommunelys.no</Link>
+            </Typography>
+        </LoginPage>
+    );
+};
 
 export const App = () => (
     <Admin
@@ -219,6 +234,8 @@ export const App = () => (
                 <Resource name="feilmelding" options={{ label: 'Meldinger om feil' }} icon={FeedbackIcon}
                     {...(erVurderer(permissions) ? { list: MeldingListe, show: MeldingVis } : {})}
                     recordRepresentation="sak_tittel" />
+                {/* Sakene brukeren følger, under Min konto (ADR-027). */}
+                <Resource name="folger" recordRepresentation="tittel" />
                 <Resource name="kommune" recordRepresentation="navn" />
                 <Resource name="produkt" recordRepresentation="beskrivelse" />
                 <CustomRoutes>
@@ -230,6 +247,7 @@ export const App = () => (
                     <Route path={GlemtPassord.path} element={<GlemtPassord />} />
                     <Route path={Registrer.path} element={<Registrer />} />
                     <Route path={Bekreft.path} element={<Bekreft />} />
+                    <Route path={SluttAFolge.path} element={<SluttAFolge />} />
                 </CustomRoutes>
             </>
         )}

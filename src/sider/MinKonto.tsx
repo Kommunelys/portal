@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
     Form, PasswordInput, TextInput, Title, email, minLength, required,
-    useGetIdentity, useGetList, useLogout, useNotify, usePermissions,
+    useDelete, useGetIdentity, useGetList, useLogout, useNotify, usePermissions,
 } from 'react-admin';
 import { Button, Card, CardContent, Divider, Stack, Typography } from '@mui/material';
 import { PORTAL, brukeradmin, erVurderer, supabase, type Meg } from '../supabase';
@@ -28,6 +28,46 @@ const MineMeldinger = () => {
                             </Typography>
                             {m.svar && <Typography variant="body2" sx={{ mt: 0.5 }}>Svar: {m.svar}</Typography>}
                         </div>
+                    ))}
+                </Stack>
+            </CardContent>
+        </Card>
+    );
+};
+
+// Sakene brukeren følger, med «Slutt å følge» (ADR-027). Vi sender e-post når
+// de kommer videre, høyst én om dagen.
+const SakerJegFolger = () => {
+    const notify = useNotify();
+    const [slett, { isPending }] = useDelete();
+    const { data } = useGetList('folger', {
+        sort: { field: 'opprettet', order: 'DESC' }, pagination: { page: 1, perPage: 200 },
+    });
+    if (!data?.length) return null;
+    return (
+        <Card>
+            <CardContent>
+                <Typography variant="subtitle1">Saker jeg følger</Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Du får e-post når sakene kommer videre, høyst én om dagen.
+                </Typography>
+                <Stack spacing={1.5} divider={<Divider />} sx={{ mt: 1.5 }}>
+                    {data.map((f) => (
+                        <Stack key={f.id} direction="row" spacing={2} sx={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
+                            <div>
+                                <SakLenke kommune={f.kommune} sak={f.sak_id ?? f.behandling_id} tittel={f.tittel} />
+                                <Typography variant="body2" color="text.secondary">
+                                    Følger siden {new Date(f.opprettet).toLocaleDateString('nb-NO')}
+                                </Typography>
+                            </div>
+                            <Button size="small" disabled={isPending} sx={{ flex: 'none' }}
+                                onClick={() => slett('folger', { id: f.id, previousData: f }, {
+                                    onSuccess: () => notify('Du følger ikke lenger saken'),
+                                    onError: (e) => notify((e as Error).message, { type: 'error' }),
+                                })}>
+                                Slutt å følge
+                            </Button>
+                        </Stack>
                     ))}
                 </Stack>
             </CardContent>
@@ -81,6 +121,7 @@ export const MinKonto = () => {
                     </Typography>
                 </CardContent>
             </Card>
+            <SakerJegFolger />
             <MineMeldinger />
             <Card>
                 <CardContent>

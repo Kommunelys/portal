@@ -7,7 +7,7 @@ import { MANGLER_CAPTCHA, feilmelding, useCaptcha } from '../captcha';
 // Innlogging og glemt passord fra ra-supabase, med captcha. ra-supabase sine
 // skjemaer kan ikke sende den med.
 
-export const InnloggingSkjema = () => {
+export const InnloggingSkjema = ({ knapp = 'Logg inn' }: { knapp?: string }) => {
     const login = useLogin();
     const notify = useNotify();
     const captcha = useCaptcha();
@@ -43,7 +43,7 @@ export const InnloggingSkjema = () => {
                     validate={required()} autoComplete="current-password" />
                 {captcha.felt}
                 <Button type="submit" variant="contained" fullWidth disabled={venter}>
-                    Logg inn
+                    {knapp}
                 </Button>
             </Form>
             <Box sx={{ textAlign: 'center', mt: 2 }}>

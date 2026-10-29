@@ -30,10 +30,10 @@ export const authProvider = {
     // Lenken i e-posten skal tilbake til denne portalen, ikke til Site URL.
     resetPassword: (params: { email: string }) =>
         grunn.resetPassword({ ...params, redirectTo: `${PORTAL}/set-password` }),
-    // Registreringen og bekreftelsen fra e-post skal kunne vises uten
-    // innlogging, som siden for glemt passord.
+    // Registreringen, bekreftelsen fra e-post og «Slutt å følge» (ADR-027)
+    // skal kunne vises uten innlogging, som siden for glemt passord.
     async checkAuth(params: any) {
-        if (['/registrer', '/bekreft'].includes(window.location.pathname)) return;
+        if (['/registrer', '/bekreft', '/slutt-a-folge'].includes(window.location.pathname)) return;
         return grunn.checkAuth(params);
     },
 };

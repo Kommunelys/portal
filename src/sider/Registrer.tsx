@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Form, PasswordInput, TextInput, email, minLength, required, useNotify } from 'react-admin';
 import { AuthLayout } from 'ra-supabase';
 import { Button, CardContent, Link, Typography } from '@mui/material';
-import { PORTAL, supabase, tilbake } from '../supabase';
+import { PORTAL, folgSak, supabase, tilbake } from '../supabase';
 import { MANGLER_CAPTCHA, feilmelding, useCaptcha } from '../captcha';
 
 const MINST = 10;
@@ -12,6 +12,8 @@ export const Registrer = () => {
     const [sendt, settSendt] = useState<string | null>(null);
     const [venter, settVenter] = useState(false);
     const captcha = useCaptcha();
+    // Fra «Følg saken» på nettstedet (ADR-027).
+    const sak = folgSak();
 
     const send = async (verdier: Record<string, any>) => {
         if (verdier.password !== verdier.gjenta) {
@@ -43,15 +45,17 @@ export const Registrer = () => {
         <AuthLayout>
             <CardContent>
                 <Typography variant="h6" gutterBottom>
-                    Ny bruker
+                    {sak === null ? 'Ny bruker' : 'Følg saken'}
                 </Typography>
                 {sendt ? (
                     <Typography>
                         Vi har sendt en e-post til {sendt}. Trykk på lenken i den for å bekrefte
-                        adressen. Deretter logger du inn her.
+                        adressen. {sak === null ? 'Deretter logger du inn her.'
+                            : 'Da kommer du tilbake til saken, og du følger den.'}
                     </Typography>
                 ) : (
                     <Form onSubmit={send}>
+                        {sak !== null && <FolgForklaring sak={sak} />}
                         <TextInput source="email" label="E-post" type="email" fullWidth
                             validate={[required(), email()]} autoComplete="email" />
                         <PasswordInput source="password" label={`Passord (minst ${MINST} tegn)`} fullWidth
@@ -60,12 +64,15 @@ export const Registrer = () => {
                             validate={required()} autoComplete="new-password" />
                         {captcha.felt}
                         <Button type="submit" variant="contained" fullWidth disabled={venter}>
-                            Opprett bruker
+                            {sak === null ? 'Opprett bruker' : 'Opprett bruker og følg saken'}
                         </Button>
                     </Form>
                 )}
                 <Typography variant="body2" sx={{ mt: 2 }}>
-                    <Link href="/login">Tilbake til innlogging</Link>
+                    {/* Innloggingen får de samme parameterne (grunn, sak, tilbake). */}
+                    <Link href={`/login${window.location.search}`}>
+                        {sak === null ? 'Tilbake til innlogging' : 'Har du en bruker? Logg inn'}
+                    </Link>
                 </Typography>
             </CardContent>
         </AuthLayout>
@@ -73,3 +80,11 @@ export const Registrer = () => {
 };
 
 Registrer.path = '/registrer';
+
+// Hvorfor brukeren må registrere seg for å følge saken (ADR-027).
+export const FolgForklaring = ({ sak }: { sak: string }) => (
+    <Typography sx={{ mb: 2 }}>
+        For å følge {sak ? <>saken «{sak}»</> : 'saken'} trenger du en bruker. Den er gratis. Når du har
+        bekreftet e-postadressen, kommer du tilbake til saken, og vi sender deg e-post når den kommer videre.
+    </Typography>
+);
