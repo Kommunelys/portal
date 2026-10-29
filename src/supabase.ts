@@ -21,11 +21,24 @@ export const PORTAL = window.location.origin;
 // og brukes bare om den er på nettstedet.
 const NETTSTEDER = ['https://kommunelys.no/', 'https://www.kommunelys.no/', 'http://localhost:8765/'];
 const TILBAKE = 'kommunelys-tilbake';
+// «Følg saken» på nettstedet (ADR-027) sender grunn=folg og tittelen på saken
+// med. Registreringen og innloggingen sier da hvorfor brukeren er her.
+const GRUNN = 'kommunelys-grunn';
 
 export function huskTilbake(
     t: string | null = new URLSearchParams(window.location.search).get('tilbake'),
 ): void {
-    if (t && NETTSTEDER.some((n) => t.startsWith(n))) sessionStorage.setItem(TILBAKE, t);
+    if (t && NETTSTEDER.some((n) => t.startsWith(n))) {
+        sessionStorage.setItem(TILBAKE, t);
+        const q = new URLSearchParams(window.location.search);
+        if (q.get('grunn') === 'folg') sessionStorage.setItem(GRUNN, (q.get('sak') ?? '').slice(0, 300));
+        else sessionStorage.removeItem(GRUNN);
+    }
+}
+
+// Tittelen på saken brukeren vil følge ('' uten tittel), eller null.
+export function folgSak(): string | null {
+    return tilbake() ? sessionStorage.getItem(GRUNN) : null;
 }
 
 export function tilbake(): string | null {
@@ -35,7 +48,8 @@ export function tilbake(): string | null {
 
 // nokkel og utloper: tilgangsnøkkelen til innloggingen, med utløpstiden i
 // sekunder. Nettstedet bruker den bare til å hente dataene for kommunene med
-// begrenset innsyn (innsyn.js i website-repoet, ADR-024). Den gjelder i en
+// begrenset innsyn (innsyn.js i website-repoet, ADR-024) og sakene brukeren
+// følger (app.js, ADR-027). Den gjelder i en
 // time; nettstedet henter en ny her når den er gått ut.
 // pa: prosjektadmin. Nettstedet viser da lenkene til redigering (ADR-025);
 // databasen avgjør fortsatt hvem som får redigere.
@@ -88,6 +102,7 @@ export function tilbakeTilNettstedet(konto: Konto | null): boolean {
     const t = tilbake();
     if (!t) return false;
     sessionStorage.removeItem(TILBAKE);
+    sessionStorage.removeItem(GRUNN);
     window.location.replace(viaNettstedet(t, konto));
     return true;
 }
