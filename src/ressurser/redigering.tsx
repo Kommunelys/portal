@@ -98,7 +98,7 @@ const Redigering = () => {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     Teksten du lagrer, vises i stedet for modellens, uten ny kontroll, og merkes
                     «redigert av Kommunelys». Kildelenkene fra analysen følger med. Skriv ikke navn på
-                    privatpersoner; folkevalgte omtales i rollen (CLAUDE.md regel 6).
+                    privatpersoner; folkevalgte omtales i rollen (CLAUDE.md regel 2).
                 </Typography>
                 {harRedigering && (
                     <ToggleButtonGroup size="small" exclusive value={fra} sx={{ mb: 2 }}
